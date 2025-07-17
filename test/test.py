@@ -4,6 +4,7 @@
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles, RisingEdge, FallingEdge
+from cocotb.binary import BinaryValue
 
 @cocotb.test()
 async def test_project(dut):
@@ -27,19 +28,17 @@ async def test_project(dut):
     # Calibration occurs after 10 cycles discharge and rising edge on cap_in
     # Provide early rise time for calibration
     await ClockCycles(dut.clk, 20)
-    dut.uio_in[0].value = 1  # Early rise time for calibration
+    dut.uio_in.value = BinaryValue("11111111", n_bits=8)  # If uio_in is 8 bits wide  # Early rise time for calibration
     await ClockCycles(dut.clk, 1)
-    dut.uio_in[0].value = 0  # Prepare for next discharge
-    await ClockCycles(dut.clk, 5)
+    dut.uio_in.value = BinaryValue("00000000", n_bits=8)  # If uio_in is 8 bits wide    await ClockCycles(dut.clk, 5)
 
     for i in range(5):
         # --- Simulate no touch (short rise time) ---
         dut._log.info("Simulating no touch (fast rise time)")
         await ClockCycles(dut.clk, 15)
-        dut.uio_in[0].value = 1  # Fast rise after discharge
+        dut.uio_in.value = BinaryValue("11111111", n_bits=8)  # If uio_in is 8 bits wide  # Fast rise after discharge
         await ClockCycles(dut.clk, 1)
-        dut.uio_in[0].value = 0  # Reset input
-
+        dut.uio_in.value = BinaryValue("00000000", n_bits=8)  # If uio_in is 8 bits wide
         # Wait for debounce to settle
         await ClockCycles(dut.clk, 20)
         assert dut.uo_out[0].value == 0, "Expected no touch (btn = 0)"
@@ -49,9 +48,9 @@ async def test_project(dut):
         while dut.uo_out[0].value != 1:
             await ClockCycles(dut.clk, 20)  # Let it discharge again
             await ClockCycles(dut.clk, 20)  # Wait longer before rising
-            dut.uio_in[0].value = 1  # Slow rise → simulates touch
+            dut.uio_in.value = BinaryValue("11111111", n_bits=8)  # If uio_in is 8 bits wide  # Slow rise → simulates touch
             await ClockCycles(dut.clk, 1)
-            dut.uio_in[0].value = 0  # Reset input
+            dut.uio_in.value = BinaryValue("00000000", n_bits=8)  # If uio_in is 8 bits wide
 
         assert dut.uo_out[0].value == 1, "Expected touch (btn = 1)"
 
@@ -61,9 +60,9 @@ async def test_project(dut):
         for i in range(10):
             dut._log.info("Simulating no touch (fast rise time)")
             await ClockCycles(dut.clk, 15)
-            dut.uio_in[0].value = 1  # Fast rise after discharge
+            dut.uio_in.value = BinaryValue("11111111", n_bits=8)  # If uio_in is 8 bits wide  # Fast rise after discharge
             await ClockCycles(dut.clk, 1)
-            dut.uio_in[0].value = 0  # Reset input
+            dut.uio_in.value = BinaryValue("00000000", n_bits=8)  # If uio_in is 8 bits wide
 
         # Wait for debounce to settle
         await ClockCycles(dut.clk, 20)

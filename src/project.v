@@ -11,36 +11,42 @@ module tt_um_tobi_mckellar_top (
     input  wire [7:0] uio_in,   // IOs: Input path
     output wire [7:0] uio_out,  // IOs: Output path
     output wire [7:0] uio_oe,   // IOs: Enable path (active high: 0=input, 1=output)
-    input  wire       ena,      // always 1 when the design is powered, so you can ignore it
+    input  wire       ena,      // always 1 when the design is powered
     input  wire       clk,      // clock
     input  wire       rst_n     // reset_n - low to reset
 );
 
-    // Outputs from the capacitivetouch module
-    wire cap_out;
-    wire cap_oe;
-    wire btn;
+    wire [3:0] cap_out;
+    wire [3:0] cap_oe;
+    wire [3:0] btn;
 
-    // Instantiate your VHDL module
-    capacitivetouch uut (
-        .clk    (clk),
-        .reset  (rst_n),
-        .cap_in (uio_in[0]),
-        .cap_out(cap_out),
-        .cap_oe (cap_oe),
-        .btn    (btn)
-    );
+    // Instantiate four capacitivetouch modules
+    genvar i;
+    generate
+        for (i = 0; i < 4; i = i + 1) begin : cap_touch_inst
+            capacitivetouch uut (
+                .clk     (clk),
+                .reset   (rst_n),
+                .cap_in  (uio_in[i]),
+                .cap_out (cap_out[i]),
+                .cap_oe  (cap_oe[i]),
+                .btn     (btn[i])
+            );
+        end
+    endgenerate
 
-    // Assign output signals
-    assign uio_out[0] = cap_out;
-    assign uio_oe[0]  = cap_oe;       // 1 = output, 0 = input
-    assign uo_out[0]  = btn;
+    // Drive uio output and OE for lower 4 bits
+    assign uio_out[3:0] = cap_out;
+    assign uio_oe[3:0]  = cap_oe;
 
-    // Set all other uio pins to input (0 OE, 0 out)
-    assign uio_out[7:1] = 7'b0;
-    assign uio_oe[7:1]  = 7'b0;
+    // Drive dedicated outputs with btn states
+    assign uo_out[3:0]  = btn;
 
-    // Set unused dedicated outputs to 0
-    assign uo_out[7:1]  = 7'b0;
+    // Set upper 4 uio pins to input mode (no drive)
+    assign uio_out[7:4] = 4'b0000;
+    assign uio_oe[7:4]  = 4'b0000;
+
+    // Clear remaining uo_out pins
+    assign uo_out[7:4]  = 4'b0000;
 
 endmodule

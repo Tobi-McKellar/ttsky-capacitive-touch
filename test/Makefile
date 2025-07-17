@@ -1,5 +1,11 @@
 # Makefile for Cocotb + GHDL + Yosys VHDL-to-Verilog conversion
 
+# Default target: run simulation
+all: sim
+
+# Sim target depends on generated Verilog
+sim: $(GENERATED_VERILOG)
+
 SIM ?= icarus
 TOPLEVEL_LANG ?= verilog
 SRC_DIR = $(PWD)/../src
@@ -45,8 +51,8 @@ endif
 COMPILE_ARGS += -I$(SRC_DIR)
 
 # Ensure Verilog is generated before simulation
-all: $(GENERATED_VERILOG)
-	make sim
+# all: $(GENERATED_VERILOG)
+# 	make sim
 
 # Include Cocotb simulation make rules
 include $(shell cocotb-config --makefiles)/Makefile.sim
