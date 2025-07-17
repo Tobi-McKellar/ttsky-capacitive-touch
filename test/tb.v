@@ -29,7 +29,7 @@ module tb ();
 `endif
 
   // Instantiate your top-level module:
-  tt_um_tobimckellar_top user_project (
+  tt_um_tobi_mckellar_top user_project (
 
 `ifdef GL_TEST
       .VPWR(VPWR),
