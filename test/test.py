@@ -3,38 +3,68 @@
 
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import ClockCycles
-
+from cocotb.triggers import ClockCycles, RisingEdge, FallingEdge
 
 @cocotb.test()
 async def test_project(dut):
-    dut._log.info("Start")
+    dut._log.info("Start test for capacitive touch module")
 
-    # Set the clock period to 10 us (100 KHz)
-    clock = Clock(dut.clk, 10, units="us")
+    # Set the clock period to 42 ns (~24 MHz)
+    clock = Clock(dut.clk, 42, units="ns")
     cocotb.start_soon(clock.start())
 
     # Reset
-    dut._log.info("Reset")
     dut.ena.value = 1
     dut.ui_in.value = 0
     dut.uio_in.value = 0
     dut.rst_n.value = 0
-    await ClockCycles(dut.clk, 10)
+    await ClockCycles(dut.clk, 5)
     dut.rst_n.value = 1
+    await ClockCycles(dut.clk, 5)
 
-    dut._log.info("Test project behavior")
+    dut._log.info("Wait for initial calibration to complete")
 
-    # Set the input values you want to test
-    dut.ui_in.value = 20
-    dut.uio_in.value = 30
-
-    # Wait for one clock cycle to see the output values
+    # Calibration occurs after 10 cycles discharge and rising edge on cap_in
+    # Provide early rise time for calibration
+    await ClockCycles(dut.clk, 20)
+    dut.uio_in[0].value = 1  # Early rise time for calibration
     await ClockCycles(dut.clk, 1)
+    dut.uio_in[0].value = 0  # Prepare for next discharge
+    await ClockCycles(dut.clk, 5)
 
-    # The following assersion is just an example of how to check the output values.
-    # Change it to match the actual expected output of your module:
-    assert dut.uo_out.value == 50
+    for i in range(5):
+        # --- Simulate no touch (short rise time) ---
+        dut._log.info("Simulating no touch (fast rise time)")
+        await ClockCycles(dut.clk, 15)
+        dut.uio_in[0].value = 1  # Fast rise after discharge
+        await ClockCycles(dut.clk, 1)
+        dut.uio_in[0].value = 0  # Reset input
 
-    # Keep testing the module by changing the input values, waiting for
-    # one or more clock cycles, and asserting the expected output values.
+        # Wait for debounce to settle
+        await ClockCycles(dut.clk, 20)
+        assert dut.uo_out[0].value == 0, "Expected no touch (btn = 0)"
+
+        # --- Simulate touch (slow rise time) ---
+        dut._log.info("Simulating touch (slow rise time)")
+        while dut.uo_out[0].value != 1:
+            await ClockCycles(dut.clk, 20)  # Let it discharge again
+            await ClockCycles(dut.clk, 20)  # Wait longer before rising
+            dut.uio_in[0].value = 1  # Slow rise → simulates touch
+            await ClockCycles(dut.clk, 1)
+            dut.uio_in[0].value = 0  # Reset input
+
+        assert dut.uo_out[0].value == 1, "Expected touch (btn = 1)"
+
+        # dut._log.info("Touch detection passed.")
+
+        # --- Simulate no touch (short rise time) ---
+        for i in range(10):
+            dut._log.info("Simulating no touch (fast rise time)")
+            await ClockCycles(dut.clk, 15)
+            dut.uio_in[0].value = 1  # Fast rise after discharge
+            await ClockCycles(dut.clk, 1)
+            dut.uio_in[0].value = 0  # Reset input
+
+        # Wait for debounce to settle
+        await ClockCycles(dut.clk, 20)
+        assert dut.uo_out[0].value == 0, "Expected no touch (btn = 0)"
