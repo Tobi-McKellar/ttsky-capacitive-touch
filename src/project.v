@@ -35,18 +35,18 @@ module tt_um_tobi_mckellar_top (
         end
     endgenerate
 
-    // Drive uio output and OE for lower 4 bits
+    // Drive uio output and OE for lower 3 bits
     assign uio_out[2:0] = cap_out;
     assign uio_oe[2:0]  = cap_oe;
 
     // Drive dedicated outputs with btn states
     assign uo_out[2:0]  = btn;
 
-    // Set upper 4 uio pins to input mode (no drive)
-    assign uio_out[7:3] = 4'b0000;
-    assign uio_oe[7:3]  = 4'b0000;
+    // Set upper 5 uio pins to input mode (no drive)
+    assign uio_out[7:3] = 5'b00000;
+    assign uio_oe[7:3]  = 5'b00000;
 
     // Clear remaining uo_out pins
-    assign uo_out[7:3]  = 4'b0000;
+    assign uo_out[7:3]  = 5'b00000;
 
 endmodule
