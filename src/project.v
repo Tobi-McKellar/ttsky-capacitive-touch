@@ -16,14 +16,14 @@ module tt_um_tobi_mckellar_top (
     input  wire       rst_n     // reset_n - low to reset
 );
 
-    wire [2:0] cap_out;
-    wire [2:0] cap_oe;
-    wire [2:0] btn;
+    wire [3:0] cap_out;
+    wire [3:0] cap_oe;
+    wire [3:0] btn;
 
     // Instantiate four capacitivetouch modules
     genvar i;
     generate
-        for (i = 0; i < 3; i = i + 1) begin : cap_touch_inst
+        for (i = 0; i < 4; i = i + 1) begin : cap_touch_inst
             capacitivetouch uut (
                 .clk     (clk),
                 .reset   (rst_n),
@@ -36,18 +36,18 @@ module tt_um_tobi_mckellar_top (
     endgenerate
 
     // Drive uio output and OE for lower 3 bits
-    assign uio_out[2:0] = cap_out;
-    assign uio_oe[2:0]  = cap_oe;
+    assign uio_out[3:0] = cap_out;
+    assign uio_oe[3:0]  = cap_oe;
 
     // Drive dedicated outputs with btn states
-    assign uo_out[2:0]  = btn;
+    assign uo_out[3:0]  = btn;
     // Clear remaining uo_out pins
-    assign uo_out[5:3] = 3'b000;
+    assign uo_out[5:4] = 2'b00;
     assign uo_out[7:6]  = ui_in[7:6];
 
     // Set upper 5 uio pins to input mode (no drive)
-    assign uio_out[7:3] = 5'b00000;
-    assign uio_oe[7:3]  = 5'b00000;
+    assign uio_out[7:4] = 4'b00000;
+    assign uio_oe[7:4]  = 4'b00000;
 
 
 endmodule
