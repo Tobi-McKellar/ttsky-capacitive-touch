@@ -41,12 +41,13 @@ module tt_um_tobi_mckellar_top (
 
     // Drive dedicated outputs with btn states
     assign uo_out[2:0]  = btn;
+    // Clear remaining uo_out pins
+    assign uo_out[5:3] = 3'b000;
+    assign uo_out[7:6]  = ui_in[7:6];
 
     // Set upper 5 uio pins to input mode (no drive)
     assign uio_out[7:3] = 5'b00000;
     assign uio_oe[7:3]  = 5'b00000;
 
-    // Clear remaining uo_out pins
-    assign uo_out[7:3]  = 5'b00000;
 
 endmodule
