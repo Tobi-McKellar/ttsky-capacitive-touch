@@ -34,7 +34,7 @@ architecture Behavioral of capacitivetouch is
     signal sync_ff2 : std_logic := '0';
 begin
 
-    cap_out <= '0' when discharging = '1' else 'Z';
+    cap_out <= '0';
     cap_oe <= '1' when discharging = '1' else '0';
 
     -- Main process
