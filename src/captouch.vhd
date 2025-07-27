@@ -30,8 +30,8 @@ architecture Behavioral of capacitivetouch is
     signal btn_state_debouncer : std_logic_vector(3 downto 0);
     signal debounced_btn_state : std_logic;
 
-    signal sync_ff1 : std_logic := '0';
-    signal sync_ff2 : std_logic := '0';
+    signal sync_ff1 : std_logic;
+    signal sync_ff2 : std_logic;
 begin
 
     cap_out <= '0';
